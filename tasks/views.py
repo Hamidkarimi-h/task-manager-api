@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from .models import Task
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 
 
 @csrf_exempt
@@ -131,4 +133,50 @@ def delete_task(request, task_id):
 
     return JsonResponse(
         {"message": "Task deleted"}
+    )
+    
+@csrf_exempt
+def register(request):
+
+    if request.method != "POST":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405
+        )
+
+    data = json.loads(request.body)
+
+    user = User.objects.create_user(
+        username=data["username"],
+        password=data["password"]
+    )
+
+    return JsonResponse(
+        {
+            "id": user.id,
+            "message": "User created"
+        },
+        status=201
+    )
+    
+@csrf_exempt
+def user_login(request):
+
+    data = json.loads(request.body)
+
+    user = authenticate(
+        username=data["username"],
+        password=data["password"]
+    )
+
+    if not user:
+        return JsonResponse(
+            {"error": "Invalid credentials"},
+            status=400
+        )
+
+    login(request, user)
+
+    return JsonResponse(
+        {"message": "Logged in"}
     )
