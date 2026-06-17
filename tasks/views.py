@@ -61,3 +61,47 @@ def task_list(request):
         data,
         safe=False
     )
+    
+@csrf_exempt
+@login_required
+def update_task(request, task_id):
+
+    if request.method != "PUT":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405
+        )
+
+    try:
+        task = Task.objects.get(
+            id=task_id,
+            user=request.user
+        )
+    except Task.DoesNotExist:
+        return JsonResponse(
+            {"error": "Task not found"},
+            status=404
+        )
+
+    data = json.loads(request.body)
+
+    task.title = data.get(
+        "title",
+        task.title
+    )
+
+    task.description = data.get(
+        "description",
+        task.description
+    )
+
+    task.is_done = data.get(
+        "is_done",
+        task.is_done
+    )
+
+    task.save()
+
+    return JsonResponse(
+        {"message": "Task updated"}
+    )
