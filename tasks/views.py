@@ -30,3 +30,34 @@ def create_task(request):
         },
         status=201
     )
+
+@login_required
+def task_list(request):
+
+    if request.method != "GET":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405
+        )
+
+    tasks = Task.objects.filter(
+        user=request.user
+    )
+
+    data = []
+
+    for task in tasks:
+        data.append({
+            "id": task.id,
+            "title": task.title,
+            "description": task.description,
+            "is_done": task.is_done,
+            "created_at": task.created_at.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            )
+        })
+
+    return JsonResponse(
+        data,
+        safe=False
+    )
