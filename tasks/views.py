@@ -105,3 +105,30 @@ def update_task(request, task_id):
     return JsonResponse(
         {"message": "Task updated"}
     )
+    
+@csrf_exempt
+@login_required
+def delete_task(request, task_id):
+
+    if request.method != "DELETE":
+        return JsonResponse(
+            {"error": "Method not allowed"},
+            status=405
+        )
+
+    try:
+        task = Task.objects.get(
+            id=task_id,
+            user=request.user
+        )
+    except Task.DoesNotExist:
+        return JsonResponse(
+            {"error": "Task not found"},
+            status=404
+        )
+
+    task.delete()
+
+    return JsonResponse(
+        {"message": "Task deleted"}
+    )
